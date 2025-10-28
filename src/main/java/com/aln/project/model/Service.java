@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class Client {
+@AllArgsConstructor
+public class Service {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private String name;
-	private String number;
 	
+	private String name;
+	private Double price;
 
 }
