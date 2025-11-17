@@ -22,6 +22,10 @@ public class Appointment {
 	private long id;
 	
 	private LocalDateTime dateTime;
+	private String status;
+	private String paymentMethod;
+	private Double totalPrice;
+	
 	
 	@ManyToOne
 	private Client client;

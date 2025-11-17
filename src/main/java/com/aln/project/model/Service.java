@@ -19,5 +19,7 @@ public class Service {
 	
 	private String name;
 	private Double price;
+	private String category;
+	private Integer durationMinutes;
 
 }
