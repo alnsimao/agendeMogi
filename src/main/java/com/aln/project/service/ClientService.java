@@ -1,5 +1,6 @@
 package com.aln.project.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +103,11 @@ public class ClientService {
 		Client client = findById(id);
 		
 		clientRepo.delete(client);
+		
+	}
+	
+	public List<Client> findAll(){
+		return clientRepo.findAll();
 		
 	}
 

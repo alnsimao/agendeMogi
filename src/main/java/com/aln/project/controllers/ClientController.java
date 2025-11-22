@@ -33,13 +33,11 @@ public class ClientController{
 	}
 	@GetMapping("/list")
 	public List<Client> findAllClient(){
-		List<Client> clients = clientRepo.findAll();
-		return clients;
+		return clientRepo.findAll();
 	}
 	
 	@GetMapping("/{id}")
 	public Client clientId(@PathVariable Long id) {
-		System.out.println("ID recebido: " + id);
 		return clientService.findById(id);
 	}
 	

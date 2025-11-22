@@ -30,6 +30,6 @@ public class Appointment {
 	@ManyToOne
 	private Client client;
 	@ManyToOne
-	private Service service;
+	private ServiceItem service;
 
 }
