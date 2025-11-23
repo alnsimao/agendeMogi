@@ -7,17 +7,28 @@ import org.springframework.stereotype.Service;
 
 import com.aln.project.exceptions.NotFoundException;
 import com.aln.project.model.Appointment;
+import com.aln.project.model.Client;
+import com.aln.project.model.ServiceItem;
 import com.aln.project.repository.AppointmentRepository;
 
 @Service
 public class AppointmentService {
 
 	@Autowired
-	AppointmentRepository appointmentRepo;
+	private AppointmentRepository appointmentRepo;
+	@Autowired
+	private ClientService clientService;
+	@Autowired
+	private ServiceItemService serviceItem;
 
-	// Create Method
 	public Appointment create(Appointment appointment) {
-		return appointmentRepo.save(appointment);
+	    Client client = clientService.findById(appointment.getClient().getId());
+	    appointment.setClient(client);
+
+	    ServiceItem item = serviceItem.findById(appointment.getService().getId());
+	    appointment.setService(item);
+
+	    return appointmentRepo.save(appointment);
 	}
 
 	public List<Appointment> findAll() {

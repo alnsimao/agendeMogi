@@ -21,5 +21,7 @@ public class ServiceItem {
 	private Double price;
 	private String category;
 	private Integer durationMinutes;
+	
+	private boolean active = true;
 
 }

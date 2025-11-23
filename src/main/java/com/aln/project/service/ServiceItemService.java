@@ -2,50 +2,50 @@ package com.aln.project.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.aln.project.exceptions.NotFoundException;
 import com.aln.project.model.ServiceItem;
 import com.aln.project.repository.ServiceRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ServiceItemService {
 
-    @Autowired
-    private ServiceRepository serviceRepository;
+    private final ServiceRepository repository;
 
-
-    public ServiceItem create(ServiceItem serviceItem) {
-        return serviceRepository.save(serviceItem);
+    public ServiceItem create(ServiceItem item) {
+        item.setActive(true);
+        return repository.save(item);
     }
 
-
-    public List<ServiceItem> findAll() {
-        return serviceRepository.findAll();
+    public List<ServiceItem> listAll() {
+        return repository.findAll();
     }
-
 
     public ServiceItem findById(Long id) {
-        return serviceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Serviço não encontrado"));
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
     }
-
 
     public ServiceItem update(Long id, ServiceItem updated) {
-        ServiceItem saved = this.findById(id);
+        ServiceItem item = findById(id);
 
-        saved.setName(updated.getName());
-        saved.setPrice(updated.getPrice());
-        saved.setCategory(updated.getCategory());
-        saved.setDurationMinutes(updated.getDurationMinutes());
+        item.setName(updated.getName());
+        item.setPrice(updated.getPrice());
+        item.setCategory(updated.getCategory());
+        item.setDurationMinutes(updated.getDurationMinutes());
 
-        return serviceRepository.save(saved);
+        return repository.save(item);
     }
 
+   
+    public ServiceItem cancel(Long id) {
+        ServiceItem item = findById(id);
 
-    public void delete(Long id) {
-        ServiceItem serviceItem = this.findById(id);
-        serviceRepository.delete(serviceItem);
+        item.setActive(false);
+
+        return repository.save(item);
     }
 }

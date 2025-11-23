@@ -1,11 +1,14 @@
 package com.aln.project.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.aln.project.model.Appointment;
+import com.aln.project.repository.AppointmentRepository;
 import com.aln.project.service.AppointmentService;
 
 @RestController
@@ -14,6 +17,8 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentService appointmentService;
+    @Autowired
+    private AppointmentRepository appointmentRepository;
 
    
     @PostMapping("/create")
@@ -28,10 +33,6 @@ public class AppointmentController {
     }
 
 
-    @GetMapping("/{id}")
-    public Appointment findById(@PathVariable Long id) {
-        return appointmentService.findById(id);
-    }
 
 
     @PutMapping("/edit/{id}")
@@ -45,4 +46,8 @@ public class AppointmentController {
         appointmentService.delete(id);
         return "Agendamento removido com sucesso!";
     }
-}
+    @GetMapping("/complete/{clientId}")
+    public List<Appointment> findByClientId(@PathVariable Long clientId) {
+    	   return appointmentRepository.findByClientId(clientId);
+    }
+}	
