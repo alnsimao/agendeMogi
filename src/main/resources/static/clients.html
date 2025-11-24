@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Clientes - AgendeMogi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="link">⬅ Voltar</a>
+    <h2>Clientes</h2>
+
+    <div id="alert" class="alert" style="display:none;"></div>
+
+    <form id="formClient">
+      <div class="row">
+        <input id="name" class="input" placeholder="Nome" required>
+        <input id="cpf" class="input" placeholder="CPF (apenas números)" required>
+        <input id="email" class="input" placeholder="Email" required>
+        <input id="number" class="input" placeholder="Telefone">
+      </div>
+      <div style="margin-top:8px">
+        <button class="button" type="submit">Cadastrar</button>
+      </div>
+    </form>
+
+    <h3 style="margin-top:18px">Lista de clientes</h3>
+    <button class="button" id="btnRefresh">Atualizar lista</button>
+    <table class="table" id="tblClients">
+      <thead><tr><th>ID</th><th>Nome</th><th>CPF</th><th>Email</th><th>Ações</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+const API = "http://localhost:8080";
+
+function showAlert(msg) {
+  const a = document.getElementById("alert");
+  a.style.display = "block";
+  a.textContent = msg;
+  setTimeout(()=>a.style.display="none", 4500);
+}
+
+async function listClients(){
+  try {
+    const res = await fetch(API + "/client/list");
+    const data = await res.json();
+    const tbody = document.querySelector("#tblClients tbody");
+    tbody.innerHTML = "";
+    data.forEach(c=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${c.id}</td><td>${c.name}</td><td>${c.cpf || ""}</td><td>${c.email || ""}</td>
+        <td>
+          <button class="button" onclick="editClientPrompt(${c.id})">Editar</button>
+          <button class="button" style="background:#c82333" onclick="deleteClient(${c.id})">Excluir</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  } catch(e){ showAlert("Erro ao carregar clientes") }
+}
+
+document.getElementById("btnRefresh").addEventListener("click", listClients);
+
+document.getElementById("formClient").addEventListener("submit", async (ev)=>{
+  ev.preventDefault();
+  const body = {
+    name: document.getElementById("name").value,
+    cpf: document.getElementById("cpf").value,
+    email: document.getElementById("email").value,
+    number: document.getElementById("number").value
+  };
+  try {
+    const res = await fetch(API + "/client/create", {
+      method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      if (text.includes("CPF inválido")) showAlert("CPF inválido");
+      else if (text.includes("CPF já cadastrado")) showAlert("CPF duplicado");
+      else if (text.includes("Email já cadastrado") || text.includes("E-mail já cadastrado")) showAlert("Email duplicado");
+      else showAlert(text || "Erro ao criar");
+      return;
+    }
+    showAlert("Cliente criado");
+    listClients();
+    ev.target.reset();
+  } catch(e) { showAlert("Erro de rede") }
+});
+
+async function deleteClient(id){
+  if (!confirm("Confirma exclusão?")) return;
+  try {
+    await fetch(API + `/client/delete/${id}`, { method: "DELETE" });
+    showAlert("Cliente excluído");
+    listClients();
+  } catch(e){ showAlert("Erro ao excluir") }
+}
+
+async function editClientPrompt(id){
+  try {
+    const res = await fetch(API + `/client/${id}`);
+    if (!res.ok) { showAlert("Cliente não encontrado"); return; }
+    const client = await res.json();
+    const newName = prompt("Nome:", client.name);
+    if (newName === null) return;
+    const newEmail = prompt("Email:", client.email);
+    if (newEmail === null) return;
+    const payload = { name: newName, email: newEmail, cpf: client.cpf, number: client.number };
+    const r = await fetch(API + `/client/edit/${id}`, {
+      method: "PUT",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) {
+      const text = await r.text();
+      showAlert(text || "Erro ao editar");
+      return;
+    }
+    showAlert("Cliente editado");
+    listClients();
+  } catch(e){ showAlert("Erro ao editar") }
+}
+
+// inicial
+listClients();
+</script>
+</body>
+</html>

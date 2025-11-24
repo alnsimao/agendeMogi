@@ -1,0 +1,40 @@
+/* styles.css - simples e limpo */
+body {
+  font-family: Arial, sans-serif;
+  background:#f5f7fb;
+  margin:0;
+  padding:20px;
+  color:#222;
+}
+.header { display:flex; gap:12px; align-items:center; }
+h1{ margin:0; }
+.container {
+  background:white;
+  padding:16px;
+  border-radius:8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  max-width:1100px;
+  margin:20px auto;
+}
+.row { display:flex; gap:12px; flex-wrap:wrap; }
+.input, input, select, textarea {
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  width:100%;
+}
+.button {
+  background:#0b5ed7;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:6px;
+  cursor:pointer;
+}
+.button:hover { opacity:0.95; }
+.table { width:100%; border-collapse:collapse; margin-top:12px; }
+.table th, .table td { padding:8px; border:1px solid #eee; text-align:left; }
+.small { width:120px; }
+.link { color:#0b5ed7; text-decoration:none; }
+.alert { background:#fdecea; color:#a71d2a; padding:8px; border-radius:6px; margin:6px 0; }
+.topbar { display:flex; gap:10px; margin-bottom:14px; }

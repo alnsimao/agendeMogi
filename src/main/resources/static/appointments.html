@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Agendamentos - AgendeMogi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="link">⬅ Voltar</a>
+    <h2>Agendamentos</h2>
+
+    <div id="alertApp" class="alert" style="display:none;"></div>
+
+    <form id="formApp">
+      <input id="clientId" class="input" type="number" placeholder="ID do cliente (ex: 2)" required>
+      <input id="serviceId" class="input" type="number" placeholder="ID do serviço (ex: 3)" required>
+      <input id="dt" class="input" type="datetime-local" required>
+      <select id="payment" class="input">
+        <option value="PIX">PIX</option>
+        <option value="CARTÃO">CARTÃO</option>
+        <option value="DINHEIRO">DINHEIRO</option>
+      </select>
+      <button class="button" type="submit">Agendar</button>
+    </form>
+
+    <h3>Agendamentos (list)</h3>
+    <button class="button" onclick="listAppointments()">Atualizar</button>
+    <table class="table" id="tblApps">
+      <thead><tr><th>ID</th><th>Cliente</th><th>Serviço</th><th>Data</th><th>Ações</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <h3>Editar Agendamento</h3>
+    <form id="formEdit">
+      <input id="editId" class="input" type="number" placeholder="ID do agendamento" required>
+      <input id="editDt" class="input" type="datetime-local">
+      <select id="editPayment" class="input">
+        <option value="">-- manter --</option>
+        <option value="PIX">PIX</option>
+        <option value="CARTÃO">CARTÃO</option>
+        <option value="DINHEIRO">DINHEIRO</option>
+      </select>
+      <button class="button" type="submit">Editar</button>
+    </form>
+
+    <h3>Excluir</h3>
+    <input id="delId" class="input" type="number" placeholder="ID para excluir">
+    <button class="button" onclick="deleteAppointment()">Excluir</button>
+  </div>
+
+<script>
+const API = "http://localhost:8080";
+function showAppAlert(msg){ const a=document.getElementById("alertApp"); a.style.display="block"; a.textContent=msg; setTimeout(()=>a.style.display="none",3500); }
+
+document.getElementById("formApp").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const body = {
+    client: { id: parseInt(document.getElementById("clientId").value) },
+    service: { id: parseInt(document.getElementById("serviceId").value) },
+    dateTime: document.getElementById("dt").value,
+    status: "PENDING",
+    paymentMethod: document.getElementById("payment").value,
+    totalPrice: 0
+  };
+  try {
+    const res = await fetch(API + "/appointment/create", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
+    if (!res.ok) {
+      const t = await res.text();
+      showAppAlert(t || "Erro ao criar");
+      return;
+    }
+    showAppAlert("Agendamento criado");
+    listAppointments();
+    e.target.reset();
+  } catch(e){ showAppAlert("Erro de rede"); }
+});
+
+async function listAppointments(){
+  try {
+    const r = await fetch(API + "/appointment/list");
+    const arr = await r.json();
+    const tbody = document.querySelector("#tblApps tbody");
+    tbody.innerHTML = "";
+    arr.forEach(a=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${a.id}</td><td>${a.client?.name || a.client}</td><td>${a.service?.name || a.service}</td><td>${a.dateTime}</td>
+        <td>
+          <button class="button" onclick="prefillEdit(${a.id})">Editar</button>
+          <button class="button" style="background:#c82333" onclick="deleteAppointmentBy(${a.id})">Excluir</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  } catch(e){ showAppAlert("Erro ao listar"); }
+}
+
+document.getElementById("formEdit").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const id = document.getElementById("editId").value;
+  const body = {};
+  const dt = document.getElementById("editDt").value;
+  const pay = document.getElementById("editPayment").value;
+  if (dt) body.dateTime = dt;
+  if (pay) body.paymentMethod = pay;
+  try {
+    const res = await fetch(API + `/appointment/edit/${id}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body) });
+    if (!res.ok) { const t = await res.text(); showAppAlert(t||"Erro"); return; }
+    showAppAlert("Editado");
+    listAppointments();
+    e.target.reset();
+  } catch(e){ showAppAlert("Erro de rede"); }
+});
+
+function prefillEdit(id){
+  document.getElementById("editId").value = id;
+  // opcional: buscar e preencher dt via GET /appointment/{id} se quiser
+}
+
+async function deleteAppointmentBy(id){
+  if (!confirm("Confirma exclusão?")) return;
+  try {
+    const r = await fetch(API + `/appointment/delete/${id}`, { method:"DELETE" });
+    if (!r.ok) { const t = await r.text(); showAppAlert(t || "Erro"); return; }
+    showAppAlert("Excluído");
+    listAppointments();
+  } catch(e){ showAppAlert("Erro de rede"); }
+}
+
+async function deleteAppointment(){
+  const id = document.getElementById("delId").value;
+  deleteAppointmentBy(id);
+}
+
+// inicializa
+listAppointments();
+</script>
+</body>
+</html>

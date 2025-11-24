@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Serviços - AgendeMogi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="link">⬅ Voltar</a>
+    <h2>Serviços (Service Items)</h2>
+
+    <div id="alertService" class="alert" style="display:none;"></div>
+
+    <form id="formService">
+      <input id="sname" class="input" placeholder="Nome do serviço" required>
+      <input id="scategory" class="input" placeholder="Categoria" required>
+      <input id="sprice" class="input" type="number" placeholder="Preço (ex: 30.00)" required>
+      <input id="sduration" class="input" type="number" placeholder="Duração (minutos)">
+      <button class="button" type="submit">Criar serviço</button>
+    </form>
+
+    <h3>Lista</h3>
+    <button class="button" onclick="listServices()">Atualizar</button>
+    <table class="table" id="tblServices">
+      <thead><tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Ações</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+<script>
+const API = "http://localhost:8080";
+
+function showServiceAlert(msg) {
+  const a = document.getElementById("alertService");
+  a.style.display = "block"; a.textContent = msg;
+  setTimeout(()=>a.style.display="none", 3500);
+}
+
+document.getElementById("formService").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const body = {
+    name: document.getElementById("sname").value,
+    category: document.getElementById("scategory").value,
+    price: parseFloat(document.getElementById("sprice").value),
+    durationMinutes: parseInt(document.getElementById("sduration").value || "0")
+  };
+  try {
+    const res = await fetch(API + "/service-items", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      showServiceAlert(t || "Erro");
+      return;
+    }
+    showServiceAlert("Serviço criado");
+    listServices();
+    e.target.reset();
+  } catch(err) { showServiceAlert("Erro de rede"); }
+});
+
+async function listServices(){
+  try {
+    const r = await fetch(API + "/service-items/list");
+    const arr = await r.json();
+    const tbody = document.querySelector("#tblServices tbody");
+    tbody.innerHTML = "";
+    arr.forEach(s=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.category}</td><td>R$ ${s.price}</td>
+        <td><button class="button" onclick="viewService(${s.id})">Ver</button></td>`;
+      tbody.appendChild(tr);
+    });
+  } catch(e){ showServiceAlert("Erro ao listar"); }
+}
+
+async function viewService(id){
+  try {
+    const r = await fetch(API + `/service-items/${id}`);
+    if (!r.ok) { showServiceAlert("Não encontrado"); return; }
+    const s = await r.json();
+    alert(`Serviço: ${s.name}\nCategoria: ${s.category}\nPreço: ${s.price}\nDuração: ${s.durationMinutes}min`);
+  } catch(e){ showServiceAlert("Erro"); }
+}
+
+listServices();
+</script>
+</body>
+</html>
